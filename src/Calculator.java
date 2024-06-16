@@ -6,15 +6,10 @@ public class Calculator {
         Scanner scanner = new Scanner(System.in);
         // 提示用户输入
         System.out.println("请输入第一个操作数：");
-        if (!scanner.hasNextDouble()) {
-            throw new IllegalArgumentException("无效的操作数");
-        }
-        double op1 = scanner.nextDouble();
+
+        String op1 = scanner.next();
         System.out.println("请输入第二个操作数：");
-        if (!scanner.hasNextDouble()) {
-            throw new IllegalArgumentException("无效的操作数");
-        }
-        double op2 = scanner.nextDouble();
+        String op2 = scanner.next();
         System.out.println("请输入操作符(+-*/)：");
         String operatorString = scanner.next();
         // 根据操作符进行计算
@@ -22,7 +17,6 @@ public class Calculator {
         Operator operator = operatorFactory.createOperator(operatorString);
         double result = operator.apply(op1, op2);
         System.out.println("结果是：" + result);
-
         scanner.close();
     }
 }

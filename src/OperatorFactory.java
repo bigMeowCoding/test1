@@ -1,4 +1,6 @@
 public class OperatorFactory {
+
+
     Operator createOperator(String operator) {
         return switch (operator) {
             case "+" -> new AddOperator();
@@ -11,25 +13,36 @@ public class OperatorFactory {
 }
 
 class AddOperator extends Operator {
-    public double apply(double op1, double op2) {
-        return op1 + op2;
+    public double apply(String op1, String op2) {
+        double op1Double = parseOperand(op1);
+        double op2Double = parseOperand(op2);
+        return op1Double + op2Double;
     }
 }
 
 class SubOperator extends Operator {
-    public double apply(double op1, double op2) {
-        return op1 - op2;
+    public double apply(String op1, String op2) {
+        double op1Double = parseOperand(op1);
+        double op2Double = parseOperand(op2);
+        return op1Double - op2Double;
     }
 }
 
 class MulOperator extends Operator {
-    public double apply(double op1, double op2) {
-        return op1 * op2;
+    public double apply(String op1, String op2) {
+        double op1Double = parseOperand(op1);
+        double op2Double = parseOperand(op2);
+        return op1Double * op2Double;
     }
 }
 
 class DivOperator extends Operator {
-    public double apply(double op1, double op2) {
-        return op1 / op2;
+    public double apply(String op1, String op2) {
+        double op1Double = parseOperand(op1);
+        double op2Double = parseOperand(op2);
+        if (op2Double == 0) {
+            throw new IllegalArgumentException("除数不能为0");
+        }
+        return op1Double / op2Double;
     }
 }
