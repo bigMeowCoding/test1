@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>页间书屋</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <main class="shell">
+      <header class="masthead">
+        <p class="eyebrow">THE PRACTICE BOOKSHOP · JAVA WEB</p>
+        <div class="heading-row"><h1>页间书屋</h1><span id="countBadge">加载中</span></div>
+        <p class="subhead">一个以 Servlet API 驱动的前后端分离练习。</p>
+      </header>
+
+      <section class="toolbar" aria-label="书籍操作">
+        <form id="searchForm" class="search-form">
+          <label for="keyword">检索藏书</label>
+          <input id="keyword" name="keyword" placeholder="书名或作者" autocomplete="off" />
+          <button type="submit">搜索</button>
+          <button id="resetButton" type="button" class="quiet">重置</button>
+        </form>
+        <button id="createButton" class="primary">＋ 登记新书</button>
+      </section>
+
+      <p id="notice" class="notice" aria-live="polite"></p>
+      <section class="catalogue">
+        <div class="catalogue-label">CATALOGUE / <span id="pageLabel">01</span></div>
+        <div id="bookList" class="book-list" aria-live="polite"></div>
+        <nav id="pager" class="pager" aria-label="分页"></nav>
+      </section>
+    </main>
+
+    <dialog id="bookDialog">
+      <form id="bookForm" method="dialog">
+        <div class="dialog-title"><p id="formKicker">NEW ENTRY</p><h2 id="formTitle">登记新书</h2></div>
+        <input id="bookId" type="hidden" />
+        <label>书名<input id="title" maxlength="100" required /></label>
+        <label>作者<input id="author" maxlength="60" required /></label>
+        <div class="two-columns">
+          <label>价格<input id="price" type="number" min="0" step="0.01" required /></label>
+          <label>库存<input id="stock" type="number" min="0" step="1" required /></label>
+        </div>
+        <p id="formError" class="form-error" aria-live="polite"></p>
+        <footer><button id="cancelButton" type="button" class="quiet">取消</button><button class="primary" type="submit">保存书目</button></footer>
+      </form>
+    </dialog>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

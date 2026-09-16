@@ -1,38 +1,73 @@
-# Tomcat 与 Servlet 学习实验室
+# Java Web 书城：前后端分离入门项目
 
-这个仓库原有的 `src/*.java` 是 Java 基础练习；新增的 Maven 模块把它扩展为可运行的 Web 实验。它使用**内嵌 Tomcat 10**，不需要单独下载或配置 Tomcat。
+这个仓库包含两个独立项目：Java 后端只提供 JSON API；Vite 前端只负责界面与用户交互。它们通过 HTTP 联调，适合学习现代 Java Web 的职责边界。
 
-## 两个核心概念
+```text
+frontend（浏览器） ── /api 代理 ──→ backend（Servlet） ──→ MySQL
+                                       │
+                    web API → service（业务）→ repository（JDBC）
+```
 
-- **Servlet**：符合 Jakarta Servlet API 的 Java 类。它接收 HTTP 请求，通过 `HttpServletRequest` 读取数据，再用 `HttpServletResponse` 写出响应。
-- **Tomcat**：Servlet 容器。它监听端口、把 URL 匹配到 Servlet、管理 Servlet 的创建/销毁，并在每个请求到来时调用 Servlet。
+## 项目结构
 
-本项目中的调用链是：
+| 位置 | 作用 |
+| --- | --- |
+| `src/main/java/com/example/bookstore/web` | JSON API：解析 HTTP、返回状态码和 JSON |
+| `service` | 校验价格/库存、分页、业务错误 |
+| `repository` | JDBC SQL 与 `BookRepository` 接口 |
+| `model` | `Book` 实体 |
+| `frontend` | 独立 Vite + 原生 JavaScript 前端 |
 
-`浏览器 → Tomcat(8081 端口与路由) → Servlet → HttpServletRequest/Response → 浏览器`
+## API 契约
 
-## 运行
+| 方法与路径 | 用途 |
+| --- | --- |
+| `GET /api/books?keyword=&page=1` | 搜索、分页列表 |
+| `GET /api/books/{id}` | 查询单本书 |
+| `POST /api/books` | 新增书籍（JSON 请求体） |
+| `PUT /api/books/{id}` | 更新书籍（JSON 请求体） |
+| `DELETE /api/books/{id}` | 删除书籍 |
 
-要求：JDK 17 与 Maven。
+新增/更新的请求体：
+
+```json
+{"title":"Java 入门","author":"张三","price":"59.90","stock":"10"}
+```
+
+## 启动联调
+
+需要 JDK 17、Maven、Node.js 与正在运行的 MySQL。
+
+1. 复制 `src/main/resources/db.properties.example` 为 `db.properties`，填写本机数据库账号。该文件被 Git 忽略。
+2. 终端 A 启动后端：
 
 ```bash
+mvn test
 mvn compile exec:java
 ```
 
-打开 <http://localhost:8081/>。停止程序时按 `Ctrl+C`，观察控制台的 `destroy` 日志。
+后端 API 地址：<http://localhost:8081/api/books>。启动时会自动创建 `bookstore` 数据库和 `books` 表。
 
-## 实验路线
+3. 终端 B 启动前端：
 
-1. 访问 `/lifecycle` 多次：`init()` 只在首次创建时调用一次，`doGet()` 每次请求都会调用。
-2. 访问 `/request?name=小明`：观察 URL、方法、请求参数和请求头如何被 Servlet 读取。
-3. 访问 `/calculate?a=10&b=4&operator=%2F`：用 HTTP 参数驱动原先计算器的四则运算逻辑。
-4. 关闭程序：观察 `destroy()`，它是释放资源的入口。
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## 关键文件
+打开 <http://localhost:5173>。`frontend/vite.config.js` 会将 `/api` 自动转发到 8081，因此开发期不需要 CORS 配置。
 
-- `EmbeddedTomcatApp`：启动并配置 Tomcat，把 URL 映射到 Servlet。
-- `LifecycleServlet`：演示 `init → service/doGet → destroy` 生命周期。
-- `RequestInfoServlet`：演示请求对象。
-- `CalculatorServlet`：演示参数校验、响应状态和 HTML 输出。
+## 验证与学习路线
 
-> Tomcat 10 使用 `jakarta.servlet.*` 包名；旧教程中的 `javax.servlet.*` 对应 Tomcat 9 及更早版本，二者不能直接混用。
+```bash
+mvn test          # BookService 的业务单元测试
+cd frontend && npm run build  # 前端生产构建
+```
+
+1. 浏览器点“登记新书”，从 `frontend/src/main.js` 的 `fetch` 看请求如何进入 `BookApiServlet`。
+2. 跟入 `BookService`，理解为什么校验、分页不能散落在 Servlet。
+3. 阅读 `JdbcBookRepository`，掌握 `PreparedStatement`、`ResultSet`、try-with-resources。
+4. 改一个前端字段，再依次更新 API 请求体、业务层、实体和 SQL，体验接口契约如何串起全栈。
+
+> 后端使用 Tomcat 10 与 `jakarta.servlet.*`，而不是旧版的 `javax.servlet.*`。

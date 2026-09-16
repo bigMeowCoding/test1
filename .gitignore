@@ -28,3 +28,8 @@ bin/
 .DS_Store
 
 .idea/
+
+# 本地数据库凭据，不提交到版本库。
+src/main/resources/db.properties
+frontend/node_modules/
+frontend/dist/
