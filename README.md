@@ -43,7 +43,7 @@ frontend（浏览器） ── /api 代理 ──→ backend（Servlet） ──
 
 ```bash
 mvn test
-mvn compile exec:java
+mvn spring-boot:run
 ```
 
 后端 API 地址：<http://localhost:8081/api/books>。启动时会自动创建 `bookstore` 数据库和 `books` 表。
@@ -71,3 +71,4 @@ cd frontend && npm run build  # 前端生产构建
 4. 改一个前端字段，再依次更新 API 请求体、业务层、实体和 SQL，体验接口契约如何串起全栈。
 
 > 后端使用 Tomcat 10 与 `jakarta.servlet.*`，而不是旧版的 `javax.servlet.*`。
+> 现在由 Spring Boot 自动配置并启动内嵌 Tomcat；下一阶段再将现有 Servlet 迁移为 Spring MVC Controller。
