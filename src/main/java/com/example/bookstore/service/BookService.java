@@ -2,11 +2,13 @@ package com.example.bookstore.service;
 
 import com.example.bookstore.model.Book;
 import com.example.bookstore.repository.BookRepository;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.SQLException;
 
 /** 业务层：封装校验、分页规则和“记录必须存在”等业务含义。 */
+@Service
 public final class BookService {
     public static final int PAGE_SIZE = 5;
     private final BookRepository repository;

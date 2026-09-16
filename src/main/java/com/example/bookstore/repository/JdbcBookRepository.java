@@ -2,6 +2,7 @@ package com.example.bookstore.repository;
 
 import com.example.bookstore.model.Book;
 import com.example.bookstore.util.Database;
+import org.springframework.stereotype.Repository;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Optional;
 
 /** 持久层实现：只负责 SQL、JDBC 映射和资源关闭，不放业务校验。 */
+@Repository
 public final class JdbcBookRepository implements BookRepository {
     @Override
     public List<Book> findByKeyword(String keyword, int offset, int limit) throws SQLException {
