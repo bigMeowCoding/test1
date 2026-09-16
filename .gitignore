@@ -33,3 +33,4 @@ bin/
 src/main/resources/db.properties
 frontend/node_modules/
 frontend/dist/
+target/
