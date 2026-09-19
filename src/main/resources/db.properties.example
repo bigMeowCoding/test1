@@ -1,5 +1,0 @@
-# 本地配置：复制为 db.properties 后按自己的 MySQL 修改。
-db.serverUrl=jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-db.url=jdbc:mysql://localhost:3306/bookstore?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
-db.username=root
-db.password=replace-with-your-password

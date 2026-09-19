@@ -38,7 +38,16 @@ frontend（浏览器） ── /api 代理 ──→ backend（Servlet） ──
 
 需要 JDK 17、Maven、Node.js 与正在运行的 MySQL。
 
-1. 复制 `src/main/resources/db.properties.example` 为 `db.properties`，填写本机数据库账号。该文件被 Git 忽略。
+1. 本地开发配置写在被 Git 忽略的 `src/main/resources/application-local.yml`。该项目默认启用 `local` Profile；首次克隆时，创建该文件并填入你的数据库账号：
+
+```yaml
+spring:
+  datasource:
+    username: root
+    password: 你的 MySQL 密码
+```
+
+如地址不同，可在该文件覆盖 `url`；部署环境可使用 `BOOKSTORE_DB_*` 环境变量或 `SPRING_PROFILES_ACTIVE` 覆盖配置。
 2. 终端 A 启动后端：
 
 ```bash

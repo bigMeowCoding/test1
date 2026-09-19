@@ -29,8 +29,10 @@ bin/
 
 .idea/
 
-# 本地数据库凭据，不提交到版本库。
+# 旧版本地配置文件；迁移后不再读取，保留忽略规则以避免意外提交其中的凭据。
 src/main/resources/db.properties
+# 本机 Spring Profile，包含数据库密码。
+src/main/resources/application-local.yml
 frontend/node_modules/
 frontend/dist/
 target/

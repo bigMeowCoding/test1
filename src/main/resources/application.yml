@@ -1,0 +1,17 @@
+server:
+  port: 8081
+
+spring:
+  profiles:
+    # 本地开发默认载入 application-local.yml；部署环境可用 SPRING_PROFILES_ACTIVE 覆盖。
+    default: local
+  datasource:
+    # 使用环境变量承载本机或部署环境的凭据，不把密码提交到 Git。
+    url: ${BOOKSTORE_DB_URL:jdbc:mysql://localhost:3306/bookstore?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai}
+    username: ${BOOKSTORE_DB_USERNAME:root}
+    password: ${BOOKSTORE_DB_PASSWORD:}
+
+bookstore:
+  database:
+    # 初始化阶段先连到 MySQL 服务本身，以便在不存在时创建 bookstore 数据库。
+    server-url: ${BOOKSTORE_DB_SERVER_URL:jdbc:mysql://localhost:3306/?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai}
