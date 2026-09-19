@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.repository.BookMapper">
+
+    <!-- Book 没有无参构造器或 setter，因此显式调用它的构造器来保持实体不可变。 -->
+    <resultMap id="BookResultMap" type="com.example.bookstore.model.Book">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/>
+            <arg column="title" javaType="java.lang.String"/>
+            <arg column="author" javaType="java.lang.String"/>
+            <arg column="price" javaType="java.math.BigDecimal"/>
+            <arg column="stock" javaType="int"/>
+        </constructor>
+    </resultMap>
+
+    <select id="findByKeyword" resultMap="BookResultMap">
+        SELECT id, title, author, price, stock
+        FROM books
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR author LIKE CONCAT('%', #{keyword}, '%')
+        ORDER BY id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countByKeyword" resultType="long">
+        SELECT COUNT(*)
+        FROM books
+        WHERE title LIKE CONCAT('%', #{keyword}, '%')
+           OR author LIKE CONCAT('%', #{keyword}, '%')
+    </select>
+
+    <select id="findById" resultMap="BookResultMap">
+        SELECT id, title, author, price, stock
+        FROM books
+        WHERE id = #{id}
+    </select>
+
+    <insert id="insert">
+        INSERT INTO books (title, author, price, stock)
+        VALUES (#{book.title}, #{book.author}, #{book.price}, #{book.stock})
+    </insert>
+
+    <update id="update">
+        UPDATE books
+        SET title = #{book.title},
+            author = #{book.author},
+            price = #{book.price},
+            stock = #{book.stock}
+        WHERE id = #{book.id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM books
+        WHERE id = #{id}
+    </delete>
+</mapper>

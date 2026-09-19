@@ -1,38 +1,38 @@
 package com.example.bookstore.service;
 
 import com.example.bookstore.model.Book;
-import com.example.bookstore.repository.BookRepository;
+import com.example.bookstore.repository.BookMapper;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.sql.SQLException;
 
 /** 业务层：封装校验、分页规则和“记录必须存在”等业务含义。 */
 @Service
 public final class BookService {
     public static final int PAGE_SIZE = 5;
-    private final BookRepository repository;
+    private final BookMapper mapper;
 
-    public BookService(BookRepository repository) { this.repository = repository; }
+    public BookService(BookMapper mapper) { this.mapper = mapper; }
 
     public BookPage list(String keyword, int requestedPage) {
         String normalizedKeyword = keyword == null ? "" : keyword.trim();
         int page = Math.max(1, requestedPage);
         try {
-            long total = repository.countByKeyword(normalizedKeyword);
+            long total = mapper.countByKeyword(normalizedKeyword);
             int totalPages = Math.max(1, (int) Math.ceil((double) total / PAGE_SIZE));
             page = Math.min(page, totalPages);
-            return new BookPage(repository.findByKeyword(normalizedKeyword, (page - 1) * PAGE_SIZE, PAGE_SIZE),
+            return new BookPage(mapper.findByKeyword(normalizedKeyword, (page - 1) * PAGE_SIZE, PAGE_SIZE),
                     page, totalPages, total);
-        } catch (SQLException exception) {
+        } catch (DataAccessException exception) {
             throw new BusinessException("查询书籍失败", exception);
         }
     }
 
     public Book get(long id) {
         try {
-            return repository.findById(id).orElseThrow(() -> new BusinessException("书籍不存在或已被删除"));
-        } catch (SQLException exception) {
+            return mapper.findById(id).orElseThrow(() -> new BusinessException("书籍不存在或已被删除"));
+        } catch (DataAccessException exception) {
             throw new BusinessException("查询书籍失败", exception);
         }
     }
@@ -44,24 +44,24 @@ public final class BookService {
     public void update(long id, String title, String author, String price, String stock) {
         Book book = buildBook(id, title, author, price, stock);
         try {
-            if (!repository.update(book)) throw new BusinessException("书籍不存在或已被删除");
-        } catch (SQLException exception) {
+            if (mapper.update(book) != 1) throw new BusinessException("书籍不存在或已被删除");
+        } catch (DataAccessException exception) {
             throw new BusinessException("更新书籍失败", exception);
         }
     }
 
     public void delete(long id) {
         try {
-            if (!repository.deleteById(id)) throw new BusinessException("书籍不存在或已被删除");
-        } catch (SQLException exception) {
+            if (mapper.deleteById(id) != 1) throw new BusinessException("书籍不存在或已被删除");
+        } catch (DataAccessException exception) {
             throw new BusinessException("删除书籍失败", exception);
         }
     }
 
     private void save(Long id, String title, String author, String price, String stock) {
         try {
-            repository.save(buildBook(id, title, author, price, stock));
-        } catch (SQLException exception) {
+            mapper.insert(buildBook(id, title, author, price, stock));
+        } catch (DataAccessException exception) {
             throw new BusinessException("保存书籍失败", exception);
         }
     }

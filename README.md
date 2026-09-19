@@ -14,7 +14,7 @@ frontend（浏览器） ── /api 代理 ──→ backend（Servlet） ──
 | --- | --- |
 | `src/main/java/com/example/bookstore/web` | JSON API：解析 HTTP、返回状态码和 JSON |
 | `service` | 校验价格/库存、分页、业务错误 |
-| `repository` | JDBC SQL 与 `BookRepository` 接口 |
+| `repository` | MyBatis Mapper 接口与 XML SQL |
 | `model` | `Book` 实体 |
 | `frontend` | 独立 Vite + 原生 JavaScript 前端 |
 
@@ -76,8 +76,24 @@ cd frontend && npm run build  # 前端生产构建
 
 1. 浏览器点“登记新书”，从 `frontend/src/main.js` 的 `fetch` 看请求如何进入 `BookApiServlet`。
 2. 跟入 `BookService`，理解为什么校验、分页不能散落在 Servlet。
-3. 阅读 `JdbcBookRepository`，掌握 `PreparedStatement`、`ResultSet`、try-with-resources。
+3. 阅读 `BookMapper` 与 `mapper/BookMapper.xml`，掌握 Mapper 接口如何与 XML 的同名语句绑定。
 4. 改一个前端字段，再依次更新 API 请求体、业务层、实体和 SQL，体验接口契约如何串起全栈。
+
+## MyBatis 学习路径
+
+书籍数据访问已由 MyBatis 实现，关键文件及职责如下：
+
+- `BookMapper.java`：`@Mapper` 让 Spring Boot 注册 MyBatis 生成的接口实现；`@Param` 对应 XML 中的 `#{...}` 具名参数。
+- `mapper/BookMapper.xml`：接口方法名与语句 `id` 一一对应。`#{...}` 由 PreparedStatement 绑定，不能用 `${...}` 代替用户输入。
+- `BookResultMap`：`Book` 是不可变对象，XML 通过 `<constructor>` 调用其构造器完成查询结果映射。
+- `application.yml`：`mybatis.mapper-locations` 指定 XML 文件位置；MyBatis 与启动初始化共同复用 Spring Boot 创建的 DataSource/连接池。
+- `DatabaseInitializer`：它仍使用 JDBC，仅负责在 MyBatis 获取业务连接之前创建数据库、表和演示数据；业务 CRUD 不再手写 JDBC。
 
 > 后端使用 Tomcat 10 与 `jakarta.servlet.*`，而不是旧版的 `javax.servlet.*`。
 > 现在由 Spring Boot 自动配置并启动内嵌 Tomcat；下一阶段再将现有 Servlet 迁移为 Spring MVC Controller。
+
+## 提交规范
+
+- 一个 commit 只实现一个独立、可描述的功能或修复；不要将多个功能、重构、依赖升级或格式化混在同一次提交中。
+- 提交前只暂存与该功能直接相关的文件，并确认暂存区内容可独立构建和验证。
+- 如果工作区同时存在多个功能，请分别完成验证后再逐个提交；无法独立验证的共享改动应在提交说明中明确其关联功能。

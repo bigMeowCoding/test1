@@ -1,10 +1,9 @@
 package com.example.bookstore.service;
 
 import com.example.bookstore.model.Book;
-import com.example.bookstore.repository.BookRepository;
+import com.example.bookstore.repository.BookMapper;
 import org.junit.jupiter.api.Test;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -15,21 +14,21 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class BookServiceTest {
     @Test
     void createRejectsNegativeStockBeforeCallingRepository() {
-        FakeBookRepository repository = new FakeBookRepository();
-        BookService service = new BookService(repository);
+        FakeBookMapper mapper = new FakeBookMapper();
+        BookService service = new BookService(mapper);
 
         BusinessException exception = assertThrows(BusinessException.class,
                 () -> service.create("Java 入门", "张三", "59.90", "-1"));
 
         assertEquals("库存不能小于 0", exception.getMessage());
-        assertEquals(0, repository.savedBooks.size());
+        assertEquals(0, mapper.savedBooks.size());
     }
 
     @Test
     void listLimitsBooksToOnePageAndNormalizesPageNumber() {
-        FakeBookRepository repository = new FakeBookRepository();
-        for (int i = 1; i <= 6; i++) repository.savedBooks.add(book(i));
-        BookService service = new BookService(repository);
+        FakeBookMapper mapper = new FakeBookMapper();
+        for (int i = 1; i <= 6; i++) mapper.savedBooks.add(book(i));
+        BookService service = new BookService(mapper);
 
         BookPage result = service.list("", 99);
 
@@ -43,7 +42,7 @@ class BookServiceTest {
     }
 
     /** 用内存替身隔离 MySQL，单元测试只验证 BookService 的业务规则。 */
-    private static final class FakeBookRepository implements BookRepository {
+    private static final class FakeBookMapper implements BookMapper {
         private final List<Book> savedBooks = new ArrayList<>();
 
         @Override public List<Book> findByKeyword(String keyword, int offset, int limit) {
@@ -51,8 +50,8 @@ class BookServiceTest {
         }
         @Override public long countByKeyword(String keyword) { return savedBooks.size(); }
         @Override public Optional<Book> findById(long id) { return savedBooks.stream().filter(book -> book.getId() == id).findFirst(); }
-        @Override public long save(Book book) { savedBooks.add(book); return savedBooks.size(); }
-        @Override public boolean update(Book book) { return false; }
-        @Override public boolean deleteById(long id) { return false; }
+        @Override public int insert(Book book) { savedBooks.add(book); return 1; }
+        @Override public int update(Book book) { return 0; }
+        @Override public int deleteById(long id) { return 0; }
     }
 }

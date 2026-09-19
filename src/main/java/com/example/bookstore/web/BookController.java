@@ -2,9 +2,9 @@ package com.example.bookstore.web;
 
 import com.example.bookstore.service.BookPage;
 import com.example.bookstore.service.BookService;
-import com.example.bookstore.service.BusinessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,52 +36,32 @@ public final class BookController {
     public ResponseEntity<?> list(
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String page) {
-        try {
-            BookPage result = bookService.list(keyword, positiveInt(page));
-            return ResponseEntity.ok(Map.of("items", result.books(), "page", result.page(),
-                    "totalPages", result.totalPages(), "total", result.total()));
-        } catch (BusinessException | IllegalArgumentException exception) {
-            return badRequest(exception);
-        }
+        BookPage result = bookService.list(keyword, positiveInt(page));
+        return ResponseEntity.ok(Map.of("items", result.books(), "page", result.page(),
+                "totalPages", result.totalPages(), "total", result.total()));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
-        try {
-            return ResponseEntity.ok(bookService.get(idFromPath(id)));
-        } catch (BusinessException | IllegalArgumentException exception) {
-            return badRequest(exception);
-        }
+        return ResponseEntity.ok(bookService.get(idFromPath(id)));
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody BookPayload payload) {
-        try {
-            bookService.create(payload.title(), payload.author(), payload.price(), payload.stock());
-            return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "书籍已创建"));
-        } catch (BusinessException | IllegalArgumentException exception) {
-            return badRequest(exception);
-        }
+    public ResponseEntity<?> create(@Valid @RequestBody BookRequest request) {
+        bookService.create(request.title(), request.author(), request.price().toPlainString(), request.stock().toString());
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("message", "书籍已创建"));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> update(@PathVariable String id, @RequestBody BookPayload payload) {
-        try {
-            bookService.update(idFromPath(id), payload.title(), payload.author(), payload.price(), payload.stock());
-            return ResponseEntity.ok(Map.of("message", "书籍已更新"));
-        } catch (BusinessException | IllegalArgumentException exception) {
-            return badRequest(exception);
-        }
+    public ResponseEntity<?> update(@PathVariable String id, @Valid @RequestBody BookRequest request) {
+        bookService.update(idFromPath(id), request.title(), request.author(), request.price().toPlainString(), request.stock().toString());
+        return ResponseEntity.ok(Map.of("message", "书籍已更新"));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable String id) {
-        try {
-            bookService.delete(idFromPath(id));
-            return ResponseEntity.noContent().build();
-        } catch (BusinessException | IllegalArgumentException exception) {
-            return badRequest(exception);
-        }
+        bookService.delete(idFromPath(id));
+        return ResponseEntity.noContent().build();
     }
 
     private long idFromPath(String idText) {
@@ -104,10 +84,4 @@ public final class BookController {
         }
     }
 
-    private ResponseEntity<Map<String, String>> badRequest(Exception exception) {
-        return ResponseEntity.badRequest().body(Map.of("message", exception.getMessage()));
-    }
-
-    /** Spring MVC 使用 Jackson 自动将 JSON 请求体转换成这个记录。 */
-    public record BookPayload(String title, String author, String price, String stock) { }
 }
