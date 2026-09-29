@@ -21,6 +21,8 @@ public interface BookMapper {
 
     Optional<BookRecord> findById(@Param("id") long id);
 
+    List<BookRecord> findByIds(@Param("ids") List<Long> ids);
+
     int insert(@Param("book") BookRecord book);
 
     int update(@Param("book") BookRecord book);

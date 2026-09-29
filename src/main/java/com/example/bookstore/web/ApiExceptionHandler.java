@@ -1,6 +1,8 @@
 package com.example.bookstore.web;
 
 import com.example.bookstore.service.BusinessException;
+import com.example.bookstore.service.ConflictException;
+import com.example.bookstore.service.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -16,6 +18,16 @@ public final class ApiExceptionHandler {
     @ExceptionHandler({BusinessException.class, IllegalArgumentException.class})
     public ResponseEntity<Map<String, String>> handleBadRequest(RuntimeException exception) {
         return badRequest(exception.getMessage());
+    }
+
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNotFound(NotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", exception.getMessage()));
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, String>> handleConflict(ConflictException exception) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", exception.getMessage()));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

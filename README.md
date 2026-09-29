@@ -18,7 +18,7 @@ frontend（浏览器） ── /api 代理 ──→ backend（Spring MVC） ─
 | `application/port` | `BookStore`：业务层定义的存储能力 |
 | `infrastructure/persistence` | `BookRecord` 持久化对象与 `BookPersistenceAdapter` 转换边界 |
 | `repository` | MyBatis Mapper 接口与 XML SQL；只处理 `BookRecord` |
-| `frontend` | 独立 Vite + 原生 JavaScript 前端 |
+| `frontend` | 独立 Vite + React 前端，包含书目与订单工作台 |
 
 ## `src/main/resources` 资源目录
 
@@ -42,12 +42,34 @@ frontend（浏览器） ── /api 代理 ──→ backend（Spring MVC） ─
 | `POST /api/books` | 新增书籍（JSON 请求体） |
 | `PUT /api/books/{id}` | 更新书籍（JSON 请求体） |
 | `DELETE /api/books/{id}` | 删除书籍 |
+| `POST /api/orders` | 创建待支付订单并预占库存 |
+| `GET /api/orders/{id}` | 查询订单及其价格快照 |
+| `POST /api/orders/{id}/pay` | 模拟支付，确认已预占库存为已售 |
+| `POST /api/orders/{id}/cancel` | 取消待支付订单并释放库存 |
 
 新增/更新的请求体：
 
 ```json
 {"title":"Java 入门","author":"张三","price":"59.90","stock":"10"}
 ```
+
+## Bookstore 2.0：订单与库存预占
+
+订单创建时传入商品与数量，系统以当前书名、单价建立不可变快照，并在同一事务中预占库存。例如：
+
+```json
+{"items":[{"bookId":1,"quantity":2},{"bookId":3,"quantity":1}]}
+```
+
+库存分为可售、预占和已售三态。创建订单通过 MySQL 条件更新一次完成“库存足够”的判断和预占，因此并发请求不能将可售库存扣成负数。支付或取消只允许从 `PENDING_PAYMENT` 状态发起，分别将预占库存转为已售或释放回可售。
+
+```text
+POST /api/orders → PENDING_PAYMENT（可售 → 预占）
+                         ├─ POST /pay    → PAID（预占 → 已售）
+                         └─ POST /cancel → CANCELLED（预占 → 可售）
+```
+
+库存不足和非法状态迁移返回 `409`；图书或订单不存在返回 `404`；请求字段无效返回 `400`，错误 JSON 保持 `{ "message": "..." }` 结构。
 
 ## 启动联调
 
@@ -86,7 +108,7 @@ npm run dev
 
 ```bash
 mvn test          # BookService 的业务单元测试
-cd frontend && npm run build  # 前端生产构建
+cd frontend && npm run build  # React 前端生产构建
 ```
 
 1. 浏览器点“登记新书”，从 `frontend/src/main.js` 的 `fetch` 看请求如何进入 `BookController`。

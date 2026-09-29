@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.bookstore.repository.OrderMapper">
+    <resultMap id="OrderRecordResultMap" type="com.example.bookstore.infrastructure.persistence.order.OrderRecord">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/><arg column="status" javaType="com.example.bookstore.domain.order.OrderStatus"/>
+            <arg column="total_amount" javaType="java.math.BigDecimal"/><arg column="created_at" javaType="java.time.Instant"/>
+            <arg column="paid_at" javaType="java.time.Instant"/><arg column="cancelled_at" javaType="java.time.Instant"/>
+        </constructor>
+    </resultMap>
+    <resultMap id="OrderLineRecordResultMap" type="com.example.bookstore.infrastructure.persistence.order.OrderLineRecord">
+        <constructor>
+            <idArg column="id" javaType="java.lang.Long"/><arg column="order_id" javaType="_long"/><arg column="book_id" javaType="_long"/>
+            <arg column="book_title" javaType="java.lang.String"/><arg column="unit_price" javaType="java.math.BigDecimal"/>
+            <arg column="quantity" javaType="_int"/><arg column="line_amount" javaType="java.math.BigDecimal"/>
+        </constructor>
+    </resultMap>
+    <insert id="insertOrder" useGeneratedKeys="true" keyProperty="order.id">
+        INSERT INTO orders (status, total_amount, created_at, paid_at, cancelled_at)
+        VALUES (#{order.status}, #{order.totalAmount}, #{order.createdAt}, #{order.paidAt}, #{order.cancelledAt})
+    </insert>
+    <insert id="insertLine">
+        INSERT INTO order_lines (order_id, book_id, book_title, unit_price, quantity, line_amount)
+        VALUES (#{line.orderId}, #{line.bookId}, #{line.bookTitle}, #{line.unitPrice}, #{line.quantity}, #{line.lineAmount})
+    </insert>
+    <select id="findOrderById" resultMap="OrderRecordResultMap">
+        SELECT id, status, total_amount, created_at, paid_at, cancelled_at FROM orders WHERE id = #{id}
+    </select>
+    <select id="findPendingOrders" resultMap="OrderRecordResultMap">
+        SELECT id, status, total_amount, created_at, paid_at, cancelled_at
+        FROM orders WHERE status = 'PENDING_PAYMENT' ORDER BY id DESC
+    </select>
+    <select id="findLinesByOrderId" resultMap="OrderLineRecordResultMap">
+        SELECT id, order_id, book_id, book_title, unit_price, quantity, line_amount FROM order_lines WHERE order_id = #{orderId} ORDER BY id
+    </select>
+    <update id="updateFromPending">
+        UPDATE orders SET status = #{order.status}, paid_at = #{order.paidAt}, cancelled_at = #{order.cancelledAt}
+        WHERE id = #{order.id} AND status = 'PENDING_PAYMENT'
+    </update>
+</mapper>

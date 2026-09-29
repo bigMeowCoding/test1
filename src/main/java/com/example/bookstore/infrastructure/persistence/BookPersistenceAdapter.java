@@ -3,18 +3,22 @@ package com.example.bookstore.infrastructure.persistence;
 import com.example.bookstore.application.port.BookStore;
 import com.example.bookstore.domain.book.Book;
 import com.example.bookstore.repository.BookMapper;
+import com.example.bookstore.repository.InventoryMapper;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
 /** 将 MyBatis 记录对象转换为业务层使用的领域模型。 */
 @Component
-public final class BookPersistenceAdapter implements BookStore {
+public class BookPersistenceAdapter implements BookStore {
     private final BookMapper mapper;
+    private final InventoryMapper inventoryMapper;
 
-    public BookPersistenceAdapter(BookMapper mapper) {
+    public BookPersistenceAdapter(BookMapper mapper, InventoryMapper inventoryMapper) {
         this.mapper = mapper;
+        this.inventoryMapper = inventoryMapper;
     }
 
     @Override
@@ -33,13 +37,29 @@ public final class BookPersistenceAdapter implements BookStore {
     }
 
     @Override
-    public int insert(Book book) {
-        return mapper.insert(toRecord(book));
+    public List<Book> findByIds(List<Long> ids) {
+        return mapper.findByIds(ids).stream().map(this::toDomain).toList();
     }
 
     @Override
+    @Transactional
+    public int insert(Book book) {
+        BookRecord record = toRecord(book);
+        int inserted = mapper.insert(record);
+        if (inserted == 1 && record.getId() != null && inventoryMapper.create(record.getId(), record.getStock()) != 1) {
+            throw new IllegalStateException("初始化图书库存失败");
+        }
+        return inserted;
+    }
+
+    @Override
+    @Transactional
     public int update(Book book) {
-        return mapper.update(toRecord(book));
+        int updated = mapper.update(toRecord(book));
+        if (updated == 1 && inventoryMapper.updateAvailable(book.id(), book.stock()) != 1) {
+            throw new IllegalStateException("更新图书库存失败");
+        }
+        return updated;
     }
 
     @Override

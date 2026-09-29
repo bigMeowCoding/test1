@@ -15,6 +15,11 @@ public interface BookStore {
 
     Optional<Book> findById(long id);
 
+    /** 默认实现保持现有端口实现兼容；持久化适配器可覆盖为批量查询。 */
+    default List<Book> findByIds(List<Long> ids) {
+        return ids.stream().map(this::findById).flatMap(Optional::stream).toList();
+    }
+
     int insert(Book book);
 
     int update(Book book);
