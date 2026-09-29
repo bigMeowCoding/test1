@@ -1,11 +1,9 @@
-package com.example.bookstore.model;
+package com.example.bookstore.domain.book;
 
 import java.math.BigDecimal;
 
 /**
- * 实体类：一行 books 表记录在 Java 中的表示。
- *
- * 初学阶段先使用普通 Java 类，便于观察 JDBC 如何把 ResultSet 转换成对象。
+ * 书籍领域模型：表达业务层关心的书籍状态，不携带 HTTP 或 MyBatis 的实现细节。
  */
 public final class Book {
     private final Long id;
@@ -22,9 +20,9 @@ public final class Book {
         this.stock = stock;
     }
 
-    public Long getId() { return id; }
-    public String getTitle() { return title; }
-    public String getAuthor() { return author; }
-    public BigDecimal getPrice() { return price; }
-    public int getStock() { return stock; }
+    public Long id() { return id; }
+    public String title() { return title; }
+    public String author() { return author; }
+    public BigDecimal price() { return price; }
+    public int stock() { return stock; }
 }

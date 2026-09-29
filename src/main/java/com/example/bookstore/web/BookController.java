@@ -2,6 +2,8 @@ package com.example.bookstore.web;
 
 import com.example.bookstore.service.BookPage;
 import com.example.bookstore.service.BookService;
+import com.example.bookstore.web.book.BookPageResponse;
+import com.example.bookstore.web.book.BookResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import jakarta.validation.Valid;
@@ -37,13 +39,12 @@ public final class BookController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String page) {
         BookPage result = bookService.list(keyword, positiveInt(page));
-        return ResponseEntity.ok(Map.of("items", result.books(), "page", result.page(),
-                "totalPages", result.totalPages(), "total", result.total()));
+        return ResponseEntity.ok(BookPageResponse.from(result));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> get(@PathVariable String id) {
-        return ResponseEntity.ok(bookService.get(idFromPath(id)));
+        return ResponseEntity.ok(BookResponse.from(bookService.get(idFromPath(id))));
     }
 
     @PostMapping

@@ -4,8 +4,8 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.bookstore.repository.BookMapper">
 
-    <!-- Book 没有无参构造器或 setter，因此显式调用它的构造器来保持实体不可变。 -->
-    <resultMap id="BookResultMap" type="com.example.bookstore.model.Book">
+    <!-- BookRecord 是持久化对象；显式构造映射使 SQL 不依赖领域模型。 -->
+    <resultMap id="BookRecordResultMap" type="com.example.bookstore.infrastructure.persistence.BookRecord">
         <constructor>
             <idArg column="id" javaType="java.lang.Long"/>
             <arg column="title" javaType="java.lang.String"/>
@@ -15,7 +15,7 @@
         </constructor>
     </resultMap>
 
-    <select id="findByKeyword" resultMap="BookResultMap">
+    <select id="findByKeyword" resultMap="BookRecordResultMap">
         SELECT id, title, author, price, stock
         FROM books
         WHERE title LIKE CONCAT('%', #{keyword}, '%')
@@ -31,7 +31,7 @@
            OR author LIKE CONCAT('%', #{keyword}, '%')
     </select>
 
-    <select id="findById" resultMap="BookResultMap">
+    <select id="findById" resultMap="BookRecordResultMap">
         SELECT id, title, author, price, stock
         FROM books
         WHERE id = #{id}

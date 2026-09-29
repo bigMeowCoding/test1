@@ -1,6 +1,6 @@
 package com.example.bookstore.repository;
 
-import com.example.bookstore.model.Book;
+import com.example.bookstore.infrastructure.persistence.BookRecord;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,16 +14,16 @@ import java.util.Optional;
  */
 @Mapper
 public interface BookMapper {
-    List<Book> findByKeyword(@Param("keyword") String keyword, @Param("offset") int offset,
-                             @Param("limit") int limit);
+    List<BookRecord> findByKeyword(@Param("keyword") String keyword, @Param("offset") int offset,
+                                   @Param("limit") int limit);
 
     long countByKeyword(@Param("keyword") String keyword);
 
-    Optional<Book> findById(@Param("id") long id);
+    Optional<BookRecord> findById(@Param("id") long id);
 
-    int insert(@Param("book") Book book);
+    int insert(@Param("book") BookRecord book);
 
-    int update(@Param("book") Book book);
+    int update(@Param("book") BookRecord book);
 
     int deleteById(@Param("id") long id);
 }
